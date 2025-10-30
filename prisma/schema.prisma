@@ -1,0 +1,160 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id          String    @id @default(uuid())
+  name        String
+  email       String    @unique
+  password    String
+  role        Role
+  createdAt   DateTime  @default(now())
+  lastLogin   DateTime?
+  student     Student?
+  faculty     Faculty?
+  admin       Admin?
+  chatLogs    ChatLog[]
+}
+
+model Student {
+  id             String     @id @default(uuid())
+  userId         String     @unique
+  user           User       @relation(fields: [userId], references: [id])
+  enrollmentNo   String     @unique
+  course         String
+  year           Int
+  semester       Int
+  cgpa           Float?
+  backlogs       Backlog[]
+  photoUrl       String?
+  enrollments    Enrollment[]
+  attendance     Attendance[]
+  results        Result[]
+}
+
+model Faculty {
+  id             String     @id @default(uuid())
+  userId         String     @unique
+  user           User       @relation(fields: [userId], references: [id])
+  department     String
+  designation    String
+  subjectsTaught Json?
+  subjects       Subject[]
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id])
+  designation  String
+  announcements Announcement[]
+}
+
+model Course {
+  id              String     @id @default(uuid())
+  name            String
+  durationYears   Int
+  department      String
+  totalSemesters  Int
+  subjects        Subject[]
+}
+
+model Backlog {
+  id           String   @id @default(uuid())
+  studentId    String
+  subjectId    String
+  semester     Int
+  reason       String?
+  isCleared    Boolean  @default(false)
+  clearedInSem Int?
+  student      Student  @relation(fields: [studentId], references: [id])
+  subject      Subject  @relation(fields: [subjectId], references: [id])
+}
+
+
+model Subject {
+  id          String     @id @default(uuid())
+  name        String
+  code        String
+  semester    Int
+  courseId    String
+  facultyId   String?
+  course      Course     @relation(fields: [courseId], references: [id])
+  faculty     Faculty?   @relation(fields: [facultyId], references: [id])
+  enrollments Enrollment[]
+  attendance  Attendance[]
+  backlogs    Backlog[]
+  results     Result[]
+}
+
+model Enrollment {
+  id          String    @id @default(uuid())
+  studentId   String
+  subjectId   String
+  semester    Int
+  year        Int
+  student     Student   @relation(fields: [studentId], references: [id])
+  subject     Subject   @relation(fields: [subjectId], references: [id])
+}
+
+model Attendance {
+  id              String    @id @default(uuid())
+  studentId       String
+  subjectId       String
+  totalClasses    Int
+  attendedClasses Int
+  percentage      Float
+  student         Student   @relation(fields: [studentId], references: [id])
+  subject         Subject   @relation(fields: [subjectId], references: [id])
+}
+
+model Result {
+  id             String    @id @default(uuid())
+  studentId      String
+  subjectId      String
+  marksObtained  Float
+  maxMarks       Float
+  grade          String
+  semester       Int
+  student        Student   @relation(fields: [studentId], references: [id])
+  subject        Subject   @relation(fields: [subjectId], references: [id])
+}
+
+model ChatLog {
+  id              String    @id @default(uuid())
+  userId          String
+  query           String
+  response        String
+  intentDetected  String?
+  createdAt       DateTime  @default(now())
+  user            User      @relation(fields: [userId], references: [id])
+}
+
+model Announcement {
+  id          String     @id @default(uuid())
+  title       String
+  description String
+  createdBy   String
+  targetRole  Role
+  createdAt   DateTime   @default(now())
+  admin       Admin      @relation(fields: [createdBy], references: [id])
+}
+
+enum Role {
+  student
+  faculty
+  admin
+} 
