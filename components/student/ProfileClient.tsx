@@ -111,7 +111,7 @@ export default function ProfileClient({ user }: { user: any }) {
             </Avatar>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">{user.name}</h1>
-              <p className="text-gray-600 text-lg mb-1">{user.email}</p>
+              <p className="text-gray-600 text-md md:text-lg mb-1">{user.email}</p>
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
                   {user.student?.course || "Computer Science"}
